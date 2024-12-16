@@ -9,7 +9,6 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
   const [channelData, setChannelData] = useState({
     theme: '',
     description: '',
-    platform: '',
     url: '',
   })
 
@@ -19,7 +18,7 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
 
   const handleExplore = (e: React.FormEvent) => {
     e.preventDefault()
-    data.onExplore(channelData, 'channel')
+    data.onExplore(channelData)
   }
 
   return (
@@ -47,12 +46,6 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
                 value={channelData.description}
                 onChange={handleInputChange}
               />
-              <Input
-                name="platform"
-                placeholder="Platform"
-                value={channelData.platform}
-                onChange={handleInputChange}
-              />
               <Button type="submit" className="w-full">
                 Explore Ideas
               </Button>
@@ -77,4 +70,3 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
     </Card>
   )
 }
-

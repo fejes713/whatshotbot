@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import ReactFlow, { 
   Node, 
   Edge,
@@ -31,6 +31,7 @@ function ContentIdeaExplorer() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const { fitView } = useReactFlow()
+  const [isLoading, setIsLoading] = useState(false)
 
   const onConnect = useCallback((params: any) => setEdges((eds) => addEdge(params, eds)), [setEdges])
 
@@ -105,35 +106,53 @@ function ContentIdeaExplorer() {
     setTimeout(() => fitView({ padding: 0.2 }), 0)
   }, [nodes, setNodes, setEdges, fitView])
 
-  exploreIdeasRef.current = useCallback((channelData: any, sourceNodeId: string) => {
-    const ideas = generateIdeas(channelData)
+  exploreIdeasRef.current = useCallback(async (channelData: any, sourceNodeId: string) => {
     const sourceNode = nodes.find(node => node.id === sourceNodeId)
     if (!sourceNode) return
 
-    const baseX = sourceNode.position.x + HORIZONTAL_SPACING
-    const baseY = sourceNode.position.y - ((ideas.length - 1) * VERTICAL_SPACING) / 2
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(channelData),
+      })
+      
+      if (!response.ok) throw new Error('Failed to generate ideas')
+      
+      const ideas = await response.json()
+      
+      const baseX = sourceNode.position.x + HORIZONTAL_SPACING
+      const baseY = sourceNode.position.y - ((ideas.length - 1) * VERTICAL_SPACING) / 2
 
-    const newNodes: Node[] = ideas.map((idea, index) => ({
-      id: `${sourceNodeId}-idea-${index}`,
-      type: 'ideaNode',
-      position: { x: baseX, y: baseY + index * VERTICAL_SPACING },
-      data: { 
-        ...idea, 
-        onExplore: (ideaData: any) => exploreIdeasRef.current?.(ideaData, `${sourceNodeId}-idea-${index}`),
-        onCreate: () => createVideoStructureRef.current?.(idea, `${sourceNodeId}-idea-${index}`),
-      },
-    }))
+      const newNodes: Node[] = ideas.map((idea, index) => ({
+        id: `${sourceNodeId}-idea-${index}`,
+        type: 'ideaNode',
+        position: { x: baseX, y: baseY + index * VERTICAL_SPACING },
+        data: { 
+          ...idea, 
+          onExplore: (ideaData: any) => exploreIdeasRef.current?.(ideaData, `${sourceNodeId}-idea-${index}`),
+          onCreate: () => createVideoStructureRef.current?.(idea, `${sourceNodeId}-idea-${index}`),
+        },
+      }))
 
-    const newEdges: Edge[] = newNodes.map((node) => ({
-      id: `${sourceNodeId}-${node.id}`,
-      source: sourceNodeId,
-      target: node.id,
-      type: 'smoothstep',
-    }))
+      const newEdges: Edge[] = newNodes.map((node) => ({
+        id: `${sourceNodeId}-${node.id}`,
+        source: sourceNodeId,
+        target: node.id,
+        type: 'smoothstep',
+      }))
 
-    setNodes((nds) => [...nds, ...newNodes])
-    setEdges((eds) => [...eds, ...newEdges])
-    setTimeout(() => fitView({ padding: 0.2 }), 0)
+      setNodes((nds) => [...nds, ...newNodes])
+      setEdges((eds) => [...eds, ...newEdges])
+      setTimeout(() => fitView({ padding: 0.2 }), 0)
+    } catch (error) {
+      console.error('Error generating ideas:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [nodes, setNodes, setEdges, fitView])
 
   const addChannelNode = useCallback(() => {
@@ -167,13 +186,6 @@ function ContentIdeaExplorer() {
       </ReactFlow>
     </div>
   )
-}
-
-function generateIdeas(channelData: any) {
-  return Array(3).fill(null).map((_, i) => ({
-    title: `Exciting Video Idea ${i + 1}`,
-    description: `This is a brief description of video idea ${i + 1}. It includes some details about the content and potential audience engagement.`,
-  }))
 }
 
 export default function ContentIdeaExplorerWrapper() {

@@ -15,6 +15,7 @@ interface VideoStructureNodeProps {
     description: string
     scenes: VideoScene[]
     onRegenerate: () => void
+    isLoading: boolean
   }
 }
 
@@ -28,6 +29,29 @@ export default function VideoStructureNode({ data }: VideoStructureNodeProps) {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (data.isLoading) {
+    return (
+      <Card className="w-[600px]">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-xl">{data.title}</CardTitle>
+              <CardDescription className="mt-2">{data.description}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin">
+              <RefreshCcw className="w-8 h-8" />
+            </div>
+            <p className="text-sm text-muted-foreground">Generating scenes...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

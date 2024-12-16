@@ -32,6 +32,7 @@ function ContentIdeaExplorer() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
   const { fitView } = useReactFlow()
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingScenes, setLoadingScenes] = useState<string | null>(null)
 
   const onConnect = useCallback((params: any) => setEdges((eds) => addEdge(params, eds)), [setEdges])
 
@@ -68,7 +69,7 @@ function ContentIdeaExplorer() {
   const exploreIdeasRef = useRef<(channelData: any, sourceNodeId: string) => void>()
   const createVideoStructureRef = useRef<(ideaData: any, sourceNodeId: string) => void>()
 
-  createVideoStructureRef.current = useCallback((ideaData: any, sourceNodeId: string) => {
+  createVideoStructureRef.current = useCallback(async (ideaData: any, sourceNodeId: string) => {
     const sourceNode = nodes.find(node => node.id === sourceNodeId)
     if (!sourceNode) return
 
@@ -83,15 +84,45 @@ function ContentIdeaExplorer() {
       data: {
         title: ideaData.title,
         description: ideaData.description,
-        scenes: generateVideoScenes(ideaData.title),
-        onRegenerate: () => {
-          setNodes((nds) => nds.map((node) => 
-            node.id === nodeId 
-              ? { ...node, data: { ...node.data, scenes: generateVideoScenes(ideaData.title) } }
-              : node
-          ))
-        },
+        scenes: [],
+        isLoading: true,
+        onRegenerate: () => regenerateScenesRef.current?.(ideaData, nodeId),
       },
+    }
+
+    setNodes((nds) => [...nds, newNode])
+    setLoadingScenes(nodeId)
+
+    try {
+      const response = await fetch('/api/generate-scenes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ideaData),
+      })
+      
+      if (!response.ok) throw new Error('Failed to generate scenes')
+      
+      const scenes = await response.json()
+
+      setNodes((nds) => nds.map((node) => 
+        node.id === nodeId 
+          ? { 
+              ...node, 
+              data: { 
+                ...node.data, 
+                scenes,
+                isLoading: false,
+                onRegenerate: () => regenerateScenesRef.current?.(ideaData, nodeId),
+              } 
+            }
+          : node
+      ))
+    } catch (error) {
+      console.error('Error generating scenes:', error)
+    } finally {
+      setLoadingScenes(null)
     }
 
     const newEdge: Edge = {
@@ -101,7 +132,6 @@ function ContentIdeaExplorer() {
       type: 'smoothstep',
     }
 
-    setNodes((nds) => [...nds, newNode])
     setEdges((eds) => [...eds, newEdge])
     setTimeout(() => fitView({ padding: 0.2 }), 0)
   }, [nodes, setNodes, setEdges, fitView])
@@ -133,7 +163,10 @@ function ContentIdeaExplorer() {
         position: { x: baseX, y: baseY + index * VERTICAL_SPACING },
         data: { 
           ...idea, 
-          onExplore: (ideaData: any) => exploreIdeasRef.current?.(ideaData, `${sourceNodeId}-idea-${index}`),
+          onExplore: (ideaData: any) => exploreIdeasRef.current?.({
+            ...ideaData,
+            type: 'explore_further'
+          }, `${sourceNodeId}-idea-${index}`),
           onCreate: () => createVideoStructureRef.current?.(idea, `${sourceNodeId}-idea-${index}`),
         },
       }))
@@ -160,7 +193,12 @@ function ContentIdeaExplorer() {
       id: 'channel',
       type: 'channelNode',
       position: { x: 0, y: 0 },
-      data: { onExplore: (channelData: any) => exploreIdeasRef.current?.(channelData, 'channel') },
+      data: { 
+        onExplore: (channelData: any) => exploreIdeasRef.current?.({
+          ...channelData,
+          type: 'initial'
+        }, 'channel') 
+      },
     }
     setNodes([newNode])
   }, [setNodes])

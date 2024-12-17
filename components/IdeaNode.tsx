@@ -1,4 +1,3 @@
-import { Handle, Position } from "reactflow";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,8 +48,6 @@ export default function IdeaNode({ data }: IdeaNodeProps) {
           </Button>
         </div>
       </CardContent>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
     </Card>
   );
 }

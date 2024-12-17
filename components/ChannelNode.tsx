@@ -1,30 +1,40 @@
-import { useState } from 'react'
-import { Handle, Position } from 'reactflow'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
 
-export default function ChannelNode({ data }: { data: { onExplore: (channelData: any) => void } }) {
+export default function ChannelNode({
+  data,
+}: {
+  data: { onExplore: (channelData: any) => void };
+}) {
   const [channelData, setChannelData] = useState({
-    theme: '',
-    description: '',
-    url: '',
-  })
+    theme: "",
+    description: "",
+    url: "",
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setChannelData({ ...channelData, [e.target.name]: e.target.value })
-  }
+    setChannelData({ ...channelData, [e.target.name]: e.target.value });
+  };
 
   const handleExplore = (e: React.FormEvent) => {
-    e.preventDefault()
-    data.onExplore(channelData)
-  }
+    e.preventDefault();
+    data.onExplore(channelData);
+  };
 
   return (
     <Card className="w-96">
-      <CardHeader>
-        <CardTitle>Let's explore</CardTitle>
+      <CardHeader className="flex justify-center items-center">
+        <Image
+          src="/logo.png"
+          alt="Logo"
+          width={200}
+          height={60}
+          className="object-contain"
+        />
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="paste">
@@ -46,7 +56,7 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
                 value={channelData.description}
                 onChange={handleInputChange}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full mt-[60px] h-[64px]">
                 Explore Ideas
               </Button>
             </form>
@@ -59,14 +69,13 @@ export default function ChannelNode({ data }: { data: { onExplore: (channelData:
                 value={channelData.url}
                 onChange={handleInputChange}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full mt-[30px] h-[64px]">
                 Explore Ideas
               </Button>
             </form>
           </TabsContent>
         </Tabs>
       </CardContent>
-      <Handle type="source" position={Position.Right} />
     </Card>
-  )
+  );
 }

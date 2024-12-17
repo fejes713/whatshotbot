@@ -7,6 +7,8 @@ interface VideoScene {
   title: string
   duration: string
   description: string
+  imageDescription: string
+  imageUrl?: string
 }
 
 interface VideoStructureNodeProps {
@@ -72,8 +74,12 @@ export default function VideoStructureNode({ data }: VideoStructureNodeProps) {
           <div className="grid gap-4">
             {data.scenes.map((scene, index) => (
               <div key={index} className="flex items-start gap-4 p-4 rounded-lg border">
-                <div className="w-32 aspect-video bg-muted rounded-md flex items-center justify-center">
-                  Scene {index + 1}
+                <div className="w-32 aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                  {scene.imageUrl ? (
+                    <img src={scene.imageUrl} alt={scene.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>Scene {index + 1}</span>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium">{scene.title}</h3>

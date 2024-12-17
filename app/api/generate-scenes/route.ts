@@ -30,12 +30,12 @@ export async function POST(request: Request) {
         },
         { 
           role: "user", 
-          content: `Create a scene breakdown for a video titled "${videoData.title}" with description: "${videoData.description}. Max 5 scenes".
+          content: `Create a scene breakdown for a video titled "${videoData.title}" with description: "${videoData.description}. Max 1 scenes".
           For each scene include:
           1. A clear title
           2. Duration in MM:SS format (total should be around 8-12 minutes)
           3. A description of what happens in the scene
-          4. A description of what the thumbnail/visual should look like for this scene`
+          4. A description of what the thumbnail/visual should look like for this scene; image description in a format that LLM can understand; just a sentence or two for Flux model`
         }
       ],
       model: "gpt-4o",

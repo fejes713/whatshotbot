@@ -69,6 +69,31 @@ function ContentIdeaExplorer() {
   const exploreIdeasRef = useRef<(channelData: any, sourceNodeId: string) => void>()
   const createVideoStructureRef = useRef<(ideaData: any, sourceNodeId: string) => void>()
 
+  const generateThumbnails = async (scenes: any[]) => {
+    const scenesWithImages = await Promise.all(
+      scenes.map(async (scene) => {
+        try {
+          const response = await fetch('/api/generate-scene-thumbnails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageDescription: scene.imageDescription }),
+          })
+          
+          if (!response.ok) throw new Error('Failed to generate thumbnail')
+          
+          const { imageUrl } = await response.json()
+          return { ...scene, imageUrl }
+        } catch (error) {
+          console.error('Error generating thumbnail:', error)
+          return scene
+        }
+      })
+    )
+    return scenesWithImages
+  }
+
   createVideoStructureRef.current = useCallback(async (ideaData: any, sourceNodeId: string) => {
     const sourceNode = nodes.find(node => node.id === sourceNodeId)
     if (!sourceNode) return
@@ -105,6 +130,8 @@ function ContentIdeaExplorer() {
       if (!response.ok) throw new Error('Failed to generate scenes')
       
       const scenes = await response.json()
+      
+      const scenesWithThumbnails = await generateThumbnails(scenes)
 
       setNodes((nds) => nds.map((node) => 
         node.id === nodeId 
@@ -112,7 +139,7 @@ function ContentIdeaExplorer() {
               ...node, 
               data: { 
                 ...node.data, 
-                scenes,
+                scenes: scenesWithThumbnails,
                 isLoading: false,
                 onRegenerate: () => regenerateScenesRef.current?.(ideaData, nodeId),
               } 

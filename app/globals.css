@@ -2,8 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes gradientRotate {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(-1deg);
+  }
+  50% {
+    background-position: 50% 50%;
+    transform: rotate(1deg);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(-1deg);
+  }
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background-color: #14161f;
+  background-size: 200% 200%;
+  animation: gradientRotate 20s ease-in-out infinite;
+  transform-origin: center center;
 }
 
 @layer base {
@@ -14,7 +34,7 @@ body {
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 234 89% 65%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -41,8 +61,8 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 234 89% 65%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
@@ -69,4 +89,32 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.react-flow__controls {
+  display: none;
+}
+
+.starsyo {
+  margin-top: 15px;
+  margin-right: 6px;
+}
+nextjs-portal {
+  display: none;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.nextjs-toast {
+  display: none !important;
+}
+
+.nextjs-static-indicator-toast-wrapper,
+[data-nextjs-static-indicator-toast-wrapper] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }

@@ -23,17 +23,16 @@ interface IdeaNodeProps {
 export default function IdeaNode({ data }: IdeaNodeProps) {
   return (
     <Card className="w-80 relative">
-      {data.isFirstNode && (
-        <div className="absolute -top-4 -right-4 w-20 h-20 starsyo">
-          <Image
-            src="/STARS.gif"
-            alt="New"
-            width={48}
-            height={48}
-            className="w-full h-full object-contain"
-          />
-        </div>
-      )}
+      <div className="absolute -top-4 -right-4 w-16 h-16 starsyo">
+        <Image
+          src="/STARS.gif"
+          alt="New"
+          width={48}
+          height={48}
+          className="w-full h-full object-contain"
+        />
+      </div>
+
       <CardHeader>
         <CardTitle className="text-lg">{data.title}</CardTitle>
         <CardDescription className="h-20 overflow-hidden">

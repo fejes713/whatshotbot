@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       num_outputs: 1,
       aspect_ratio: "16:9",
       output_format: "webp",
-      output_quality: 80,
+      output_quality: 100,
       num_inference_steps: 4
     }
 

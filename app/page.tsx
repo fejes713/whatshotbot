@@ -17,11 +17,13 @@ import 'reactflow/dist/style.css'
 import ChannelNode from '@/components/ChannelNode'
 import IdeaNode from '@/components/IdeaNode'
 import VideoStructureNode from '@/components/VideoStructureNode'
+import AnimatedScenesNode from '@/components/AnimatedScenesNode'
 
 const nodeTypes = {
   channelNode: ChannelNode,
   ideaNode: IdeaNode,
   videoStructureNode: VideoStructureNode,
+  animatedScenesNode: AnimatedScenesNode
 }
 
 const HORIZONTAL_SPACING = 400
@@ -68,6 +70,7 @@ function ContentIdeaExplorer() {
 
   const exploreIdeasRef = useRef<(channelData: any, sourceNodeId: string) => void>()
   const createVideoStructureRef = useRef<(ideaData: any, sourceNodeId: string) => void>()
+  const generateAnimationsRef = useRef<(videoData: any, sourceNodeId: string) => void>()
 
   const generateThumbnails = async (scenes: any[]) => {
     const scenesWithImages = await Promise.all(
@@ -116,6 +119,15 @@ function ContentIdeaExplorer() {
     }
 
     setNodes((nds) => [...nds, newNode])
+
+    const newEdge: Edge = {
+      id: `${sourceNodeId}-${nodeId}`,
+      source: sourceNodeId,
+      target: nodeId,
+      type: 'smoothstep',
+    }
+
+    setEdges((eds) => [...eds, newEdge])
     setLoadingScenes(nodeId)
 
     try {
@@ -142,6 +154,16 @@ function ContentIdeaExplorer() {
                 scenes: scenesWithThumbnails,
                 isLoading: false,
                 onRegenerate: () => regenerateScenesRef.current?.(ideaData, nodeId),
+                onAnimate: () => {
+                  console.log('onAnimate triggered', {
+                    title: ideaData.title,
+                    scenes: scenesWithThumbnails,
+                  })
+                  generateAnimationsRef.current?.({
+                    title: ideaData.title,
+                    scenes: scenesWithThumbnails,
+                  }, nodeId)
+                },
               } 
             }
           : node
@@ -151,17 +173,7 @@ function ContentIdeaExplorer() {
     } finally {
       setLoadingScenes(null)
     }
-
-    const newEdge: Edge = {
-      id: `${sourceNodeId}-${nodeId}`,
-      source: sourceNodeId,
-      target: nodeId,
-      type: 'smoothstep',
-    }
-
-    setEdges((eds) => [...eds, newEdge])
-    setTimeout(() => fitView({ padding: 0.2 }), 0)
-  }, [nodes, setNodes, setEdges, fitView])
+  }, [nodes, setNodes, setEdges, generateThumbnails])
 
   exploreIdeasRef.current = useCallback(async (channelData: any, sourceNodeId: string) => {
     const sourceNode = nodes.find(node => node.id === sourceNodeId)
@@ -233,6 +245,55 @@ function ContentIdeaExplorer() {
   useEffect(() => {
     addChannelNode()
   }, [addChannelNode])
+
+  generateAnimationsRef.current = useCallback(async (videoData: any, sourceNodeId: string) => {
+    console.log('generateAnimationsRef called with:', { videoData, sourceNodeId })
+    
+    const sourceNode = nodes.find(node => node.id === sourceNodeId)
+    if (!sourceNode) {
+      console.error('Source node not found')
+      return
+    }
+
+    // Create unique ID for the new node
+    const nodeId = `${sourceNodeId}-animated-${Date.now()}`
+    const baseX = sourceNode.position.x + HORIZONTAL_SPACING
+    const baseY = sourceNode.position.y
+
+    // Create the animated scenes node
+    const newNode: Node = {
+      id: nodeId,
+      type: 'animatedScenesNode',
+      position: { x: baseX, y: baseY },
+      data: {
+        title: `Animated: ${videoData.title}`,
+        description: 'Animated scenes preview',
+        scenes: videoData.scenes.map((scene: any) => ({
+          imageUrl: scene.imageUrl,
+          prompt: scene.imageDescription,
+          animatedUrl: scene.imageUrl // Using original image as placeholder for now
+        })),
+        isLoading: false
+      },
+    }
+
+    // Create edge connecting to the new node
+    const newEdge: Edge = {
+      id: `${sourceNodeId}-${nodeId}`,
+      source: sourceNodeId,
+      target: nodeId,
+      type: 'smoothstep',
+    }
+
+    console.log('Adding new animated node:', newNode)
+    
+    // Add the new node and edge
+    setNodes((nds) => [...nds, newNode])
+    setEdges((eds) => [...eds, newEdge])
+    
+    // Fit view to show the new node
+    setTimeout(() => fitView({ padding: 0.2 }), 0)
+  }, [nodes, setNodes, setEdges, fitView])
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>

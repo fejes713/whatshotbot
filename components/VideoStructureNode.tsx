@@ -1,7 +1,7 @@
 import { Handle, Position } from 'reactflow'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { RefreshCcw, ExternalLink } from 'lucide-react'
+import { RefreshCcw, ExternalLink, Video } from 'lucide-react'
 
 interface VideoScene {
   title: string
@@ -17,20 +17,21 @@ interface VideoStructureNodeProps {
     description: string
     scenes: VideoScene[]
     onRegenerate: () => void
+    onAnimate: () => void
     isLoading: boolean
   }
 }
 
 export default function VideoStructureNode({ data }: VideoStructureNodeProps) {
-  const totalDuration = data.scenes.reduce((acc, scene) => {
-    const [mins, secs] = scene.duration.split(':').map(Number)
-    return acc + mins * 60 + secs
+  const totalDuration = data.scenes.reduce((total, scene) => {
+    const [minutes, seconds] = scene.duration.split(':').map(Number)
+    return total + minutes * 60 + seconds
   }, 0)
 
   const formatTotalDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   if (data.isLoading) {
@@ -96,14 +97,25 @@ export default function VideoStructureNode({ data }: VideoStructureNodeProps) {
               <RefreshCcw className="w-4 h-4 mr-2" />
               Regenerate
             </Button>
-            <Button onClick={() => window.open('https://www.veed.io', '_blank')} className="flex-1">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Start Editing
+            <Button 
+              onClick={() => {
+                console.log('Animate button clicked')
+                console.log('Current scenes:', data.scenes)
+                console.log('onAnimate function exists:', !!data.onAnimate)
+                if (data.onAnimate) {
+                  data.onAnimate()
+                }
+              }} 
+              className="flex-1"
+            >
+              <Video className="w-4 h-4 mr-2" />
+              Animate Scenes
             </Button>
           </div>
         </div>
       </CardContent>
       <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
     </Card>
   )
 }

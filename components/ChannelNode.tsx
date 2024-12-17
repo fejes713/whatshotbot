@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function ChannelNode({ data }: { data: { onExplore: (channelData: any) => void } }) {
   const [channelData, setChannelData] = useState({
-    theme: '',
-    description: '',
+    theme: 'News USA',
+    description: 'Channel about crime news in the United States',
     url: '',
   })
 

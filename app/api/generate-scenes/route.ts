@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     1. A clear title
     2. Duration in MM:SS format (total should be around 8-12 minutes)
     3. A description of what happens in the scene
-    4. A description of what the thumbnail/visual should look like for this scene
+    4. A description of what the first frame of visual scene should look like for this scene; image description in a format that LLM can understand; just a sentence or two for Flux model and explicitly mention that it should not have text.
 
     Format the response as a JSON array of objects with 'title', 'duration', 'description', and 'imageDescription' properties.`;
 
